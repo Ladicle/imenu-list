@@ -228,12 +228,26 @@ See `hs-minor-mode' for information on what is hide/show."
         (goto-char pos)
         (hs-toggle-hiding)))))
 
+(defun imenu-list--entry-icon (entry)
+  "Return pretty icon depends on the entry name."
+   (pcase entry
+     ("Variable" "")
+     ("Variables" "")
+     ("Constant" "")
+     ("Types" "")
+     ("Function" "")
+     ("Method" "")
+     ("Field" "")
+     ("Class" "")
+     ("Interface" "")
+     (_ "")))
+
 (defun imenu-list--insert-entry (entry depth)
   "Insert a line for ENTRY with DEPTH."
   (if (imenu--subalist-p entry)
       (progn
         (insert (imenu-list--depth-string depth))
-        (insert-button (format "+ %s" (car entry))
+        (insert-button (format "%s %s" (imenu-list--entry-icon (car entry)) (car entry))
                        'face (imenu-list--get-face depth t)
                        'help-echo (format "Toggle: %s"
                                           (car entry))
