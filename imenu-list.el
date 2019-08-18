@@ -228,33 +228,57 @@ See `hs-minor-mode' for information on what is hide/show."
         (goto-char pos)
         (hs-toggle-hiding)))))
 
-(defun imenu-list--entry-formatter (entry)
-  "Format entry using pretty nerd font."
-  (format "%s%s" (pcase entry
-                  ("Variable" "")
-                  ("Constant" "")
-                  ("Function" "")
-                  (_ ""))
-          entry))
-
-(defun imenu-list--entry-icon (entry)
+(defun imenu-list--entry-go-mode-icon (entry)
   "Return pretty icon depends on the entry name."
    (pcase entry
-     ("(Variable)" "")
-     ("(Constant)" "")
-     ("(Function)" "")
-     ("(Method)" "")
-     ("(Field)" "")
-     ("(Function)" "")
-     ("(Interface)" "")
-     (_ "-")))                          ;
+     ("Variable" (all-the-icons-faicon "tag" :height 0.75 :v-adjust -0.05 :face 'font-lock-warning-face))
+     ("Constant" (all-the-icons-faicon "tag" :height 0.75 :v-adjust -0.05))
+     ("Number" (all-the-icons-faicon "hashtag" :height 0.65 :v-adjust 0.07 :face 'font-lock-constant-face))
+     ("Field" (all-the-icons-faicon "tags" :height 0.65 :v-adjust -0.15 :face 'font-lock-warning-face))
+     ("Function" (all-the-icons-faicon "cube" :height 0.7 :v-adjust -0.05 :face 'font-lock-constant-face))
+     ("Method" (all-the-icons-faicon "cube" :height 0.7 :v-adjust -0.05 :face 'font-lock-constant-face))
+     ("Interface" (all-the-icons-faicon "clone" :height 0.65 :v-adjust 0.01))
+     ("Struct" (all-the-icons-faicon "clone" :height 0.65 :v-adjust 0.01 :face 'font-lock-constant-face))
+     ("Unknown" "-")
+     (_ "")))
 
-(defun imenu-list--insert-entry (entry depth)
-  "Insert a line for ENTRY with DEPTH."
+(defun imenu-list--insert-go-mode-entry (entry depth)
+  (if (imenu--subalist-p entry)
+      (let* ((splitted-entry (car (car (cdr entry))))
+             (entry-type (if (s-prefix? "(" splitted-entry) (substring splitted-entry 1 -1) (car entry))))
+        (progn
+          (insert (imenu-list--depth-string depth)
+                  (imenu-list--entry-go-mode-icon entry-type))
+          (insert-button (format " %s" (car entry))
+                         'face 'imenu-list-entry-face-1
+                         'help-echo (format "Toggle: %s"
+                                            (car entry))
+                         'follow-link t
+                         'action ;; #'imenu-list--action-goto-entry
+                         #'imenu-list--action-toggle-hs)
+          (insert "\n")))
+    (let* ((splitted-entry (split-string (car entry) " ("))
+           (entry-name (car splitted-entry))
+           (entry-type (if (cdr splitted-entry)
+                           (substring (car (cdr splitted-entry)) 0 -1)
+                         "Unknown")))
+      (unless (or (string= "(Struct)" entry-name) (string= "(Interface)" entry-name))
+        (progn
+          (insert (imenu-list--depth-string depth)
+                  (imenu-list--entry-go-mode-icon entry-type))
+          (insert-button (format " %s" entry-name)
+                         'face 'imenu-list-entry-face-1
+                         'help-echo (format "Go to: %s"
+                                            (car entry))
+                         'follow-link t
+                         'action #'imenu-list--action-goto-entry)
+          (insert "\n"))))))
+
+(defun imenu-list--insert-general-entry (entry depth)
   (if (imenu--subalist-p entry)
       (progn
         (insert (imenu-list--depth-string depth))
-        (insert-button (imenu-list--entry-formatter (car entry))
+        (insert-button (format "+ %s" (car entry))
                        'face (imenu-list--get-face depth t)
                        'help-echo (format "Toggle: %s"
                                           (car entry))
@@ -264,15 +288,19 @@ See `hs-minor-mode' for information on what is hide/show."
                        )
         (insert "\n"))
     (insert (imenu-list--depth-string depth))
-    (insert-button (format "%s %s"
-                           (imenu-list--entry-icon (car (cdr (split-string (car entry)))))
-                           (car entry))
+    (insert-button (format "- %s" (car entry))
                    'face (imenu-list--get-face depth nil)
                    'help-echo (format "Go to: %s"
                                       (car entry))
                    'follow-link t
                    'action #'imenu-list--action-goto-entry)
     (insert "\n")))
+
+(defun imenu-list--insert-entry (entry depth)
+  "Insert a line for ENTRY with DEPTH."
+  (pcase (with-current-buffer imenu-list--displayed-buffer major-mode)
+    ('go-mode (imenu-list--insert-go-mode-entry entry depth))
+    (_ (imenu-list--insert-general-entry entry depth))))
 
 (defun imenu-list--insert-entries-internal (index-alist depth)
   "Insert all imenu entries in INDEX-ALIST into the current buffer.
@@ -543,7 +571,6 @@ imenu entries did not change since the last update."
 If the imenu-list buffer doesn't exist, create it."
   (interactive)
   (pop-to-buffer imenu-list-buffer-name))
-
 (defun imenu-list-show-noselect ()
   "Show the imenu-list buffer, but don't select it.
 If the imenu-list buffer doesn't exist, create it."
