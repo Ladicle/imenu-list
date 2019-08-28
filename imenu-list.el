@@ -264,22 +264,17 @@ See `hs-minor-mode' for information on what is hide/show."
            (entry-type (if (cdr splitted-entry)
                            (substring (car (cdr splitted-entry)) 0 -1)
                          "Unknown")))
-      (unless (or (string= "(Struct)" entry-name)
-                  (string= "(Interface)" entry-name)
-                  (string= "(String)" entry-name)
-                  (string= "(Variable)" entry-name)
-                  (string= "(Boolean)" entry-name)
-                  (string= "(Number)" entry-name))
-        (progn
-          (insert (imenu-list--depth-string depth)
-                  (imenu-list--entry-go-mode-icon entry-type))
-          (insert-button (format " %s" entry-name)
-                         'face 'imenu-list-entry-face-1
-                         'help-echo (format "Go to: %s"
-                                            (car entry))
-                         'follow-link t
-                         'action #'imenu-list--action-goto-entry)
-          (insert "\n"))))))
+      (progn
+        (insert (imenu-list--depth-string depth)
+                (imenu-list--entry-go-mode-icon entry-type))
+        (insert-button (format " %s" entry-name)
+                       'face 'imenu-list-entry-face-1
+                       'help-echo (format "Go to: %s"
+                                          (car entry))
+                       'follow-link t
+                       'action #'imenu-list--action-goto-entry)
+        (insert "\n"))
+      )))
 
 (defun imenu-list--insert-general-entry (entry depth)
   (if (imenu--subalist-p entry)
