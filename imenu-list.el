@@ -168,6 +168,54 @@ current buffer, or nil.  See `imenu-list-position-translator' for details."
   "Face for subalist entries with depth 0."
   :group 'imenu-list)
 
+(defface imenu-list-entry-face-4
+  '((((class color) (background light))
+     :inherit imenu-list-entry-face
+     :foreground "orange red")
+    (((class color) (background dark))
+     :inherit imenu-list-entry-face
+     :foreground "sandy brown"))
+  "Face for imenu-list entries with depth 4."
+  :group 'imenu-list)
+
+(defface imenu-list-entry-subalist-face-4
+  '((t :inherit imenu-list-entry-face-4
+       :weight bold :underline t))
+  "Face for subalist entries with depth 0."
+  :group 'imenu-list)
+
+(defface imenu-list-entry-face-5
+  '((((class color) (background light))
+     :inherit imenu-list-entry-face
+     :foreground "orange red")
+    (((class color) (background dark))
+     :inherit imenu-list-entry-face
+     :foreground "sandy brown"))
+  "Face for imenu-list entries with depth 5."
+  :group 'imenu-list)
+
+(defface imenu-list-entry-subalist-face-5
+  '((t :inherit imenu-list-entry-face-5
+       :weight bold :underline t))
+  "Face for subalist entries with depth 0."
+  :group 'imenu-list)
+
+(defface imenu-list-entry-face-6
+  '((((class color) (background light))
+     :inherit imenu-list-entry-face
+     :foreground "orange red")
+    (((class color) (background dark))
+     :inherit imenu-list-entry-face
+     :foreground "sandy brown"))
+  "Face for imenu-list entries with depth 6."
+  :group 'imenu-list)
+
+(defface imenu-list-entry-subalist-face-6
+  '((t :inherit imenu-list-entry-face-6
+       :weight bold :underline t))
+  "Face for subalist entries with depth 0."
+  :group 'imenu-list)
+
 (defun imenu-list--get-face (depth subalistp)
   "Get face for entry.
 DEPTH is the depth of the entry in the list.
@@ -178,6 +226,9 @@ current entry (current entry is a \"father\")."
     (1 (if subalistp 'imenu-list-entry-subalist-face-1 'imenu-list-entry-face-1))
     (2 (if subalistp 'imenu-list-entry-subalist-face-2 'imenu-list-entry-face-2))
     (3 (if subalistp 'imenu-list-entry-subalist-face-3 'imenu-list-entry-face-3))
+    (4 (if subalistp 'imenu-list-entry-subalist-face-4 'imenu-list-entry-face-4))
+    (5 (if subalistp 'imenu-list-entry-subalist-face-5 'imenu-list-entry-face-5))
+    (6 (if subalistp 'imenu-list-entry-subalist-face-6 'imenu-list-entry-face-6))
     (t (if subalistp 'imenu-list-entry-subalist-face-3 'imenu-list-entry-face-3))))
 
 ;;; collect entries
