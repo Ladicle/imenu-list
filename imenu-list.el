@@ -71,6 +71,16 @@ Used to avoid updating if the point didn't move.")
   "Variables for `imenu-list' package."
   :group 'imenu)
 
+(defcustom imenu-list-entry-prefix "-"
+  "Prefix of imenu list emtry."
+  :group 'imenu-list
+  :type 'string)
+
+(defcustom imenu-list-subtree-prefix "+"
+  "Prefix of imenu subtree which has entries."
+  :group 'imenu-list
+  :type 'string)
+
 (defcustom imenu-list-mode-line-format
   '("%e" mode-line-front-space mode-line-mule-info mode-line-client
     mode-line-modified mode-line-remote mode-line-frame-identification
@@ -115,8 +125,7 @@ current buffer, or nil.  See `imenu-list-position-translator' for details."
   :group 'imenu-list)
 
 (defface imenu-list-entry-subalist-face-0
-  '((t :inherit imenu-list-entry-face-0
-       :weight bold :underline t))
+  '((t :inherit imenu-list-entry-face-0))
   "Face for subalist entries with depth 0."
   :group 'imenu-list)
 
@@ -131,8 +140,7 @@ current buffer, or nil.  See `imenu-list-position-translator' for details."
   :group 'imenu-list)
 
 (defface imenu-list-entry-subalist-face-1
-  '((t :inherit imenu-list-entry-face-1
-       :weight bold :underline t))
+  '((t :inherit imenu-list-entry-face-1))
   "Face for subalist entries with depth 1."
   :group 'imenu-list)
 
@@ -147,8 +155,7 @@ current buffer, or nil.  See `imenu-list-position-translator' for details."
   :group 'imenu-list)
 
 (defface imenu-list-entry-subalist-face-2
-  '((t :inherit imenu-list-entry-face-2
-       :weight bold :underline t))
+  '((t :inherit imenu-list-entry-face-2))
   "Face for subalist entries with depth 2."
   :group 'imenu-list)
 
@@ -163,8 +170,7 @@ current buffer, or nil.  See `imenu-list-position-translator' for details."
   :group 'imenu-list)
 
 (defface imenu-list-entry-subalist-face-3
-  '((t :inherit imenu-list-entry-face-3
-       :weight bold :underline t))
+  '((t :inherit imenu-list-entry-face-3))
   "Face for subalist entries with depth 0."
   :group 'imenu-list)
 
@@ -179,8 +185,7 @@ current buffer, or nil.  See `imenu-list-position-translator' for details."
   :group 'imenu-list)
 
 (defface imenu-list-entry-subalist-face-4
-  '((t :inherit imenu-list-entry-face-4
-       :weight bold :underline t))
+  '((t :inherit imenu-list-entry-face-4))
   "Face for subalist entries with depth 0."
   :group 'imenu-list)
 
@@ -195,8 +200,7 @@ current buffer, or nil.  See `imenu-list-position-translator' for details."
   :group 'imenu-list)
 
 (defface imenu-list-entry-subalist-face-5
-  '((t :inherit imenu-list-entry-face-5
-       :weight bold :underline t))
+  '((t :inherit imenu-list-entry-face-5))
   "Face for subalist entries with depth 0."
   :group 'imenu-list)
 
@@ -211,8 +215,7 @@ current buffer, or nil.  See `imenu-list-position-translator' for details."
   :group 'imenu-list)
 
 (defface imenu-list-entry-subalist-face-6
-  '((t :inherit imenu-list-entry-face-6
-       :weight bold :underline t))
+  '((t :inherit imenu-list-entry-face-6))
   "Face for subalist entries with depth 0."
   :group 'imenu-list)
 
@@ -279,59 +282,11 @@ See `hs-minor-mode' for information on what is hide/show."
         (goto-char pos)
         (hs-toggle-hiding)))))
 
-(defun imenu-list--entry-go-mode-icon (entry)
-  "Return pretty icon depends on the entry name."
-   (pcase entry
-     ("Variable" (all-the-icons-faicon "tag" :height 0.75 :v-adjust -0.05 :face 'font-lock-warning-face))
-     ("Constant" (all-the-icons-faicon "tag" :height 0.75 :v-adjust -0.05))
-     ("Number" (all-the-icons-faicon "hashtag" :height 0.65 :v-adjust 0.07 :face 'font-lock-constant-face))
-     ("String" (all-the-icons-faicon "hashtag" :height 0.65 :v-adjust 0.07 :face 'font-lock-variable-name-face))
-     ("Boolean" (all-the-icons-faicon "hashtag" :height 0.65 :v-adjust 0.07))
-     ("Field" (all-the-icons-faicon "tags" :height 0.65 :v-adjust -0.15 :face 'font-lock-warning-face))
-     ("Function" (all-the-icons-faicon "cube" :height 0.7 :v-adjust -0.05 :face 'font-lock-constant-face))
-     ("Method" (all-the-icons-faicon "cube" :height 0.7 :v-adjust -0.05 :face 'font-lock-constant-face))
-     ("Interface" (all-the-icons-faicon "clone" :height 0.65 :v-adjust 0.01))
-     ("Struct" (all-the-icons-faicon "clone" :height 0.65 :v-adjust 0.01 :face 'font-lock-constant-face))
-     ("Unknown" "-")
-     (_ "")))
-
-(defun imenu-list--insert-go-mode-entry (entry depth)
-  (if (imenu--subalist-p entry)
-      (let* ((splitted-entry (car (car (cdr entry))))
-             (entry-type (if (s-prefix? "(" splitted-entry) (substring splitted-entry 1 -1) (car entry))))
-        (progn
-          (insert (imenu-list--depth-string depth)
-                  (imenu-list--entry-go-mode-icon entry-type))
-          (insert-button (format " %s" (car entry))
-                         'face 'imenu-list-entry-face-1
-                         'help-echo (format "Toggle: %s"
-                                            (car entry))
-                         'follow-link t
-                         'action ;; #'imenu-list--action-goto-entry
-                         #'imenu-list--action-toggle-hs)
-          (insert "\n")))
-    (let* ((splitted-entry (split-string (car entry) " ("))
-           (entry-name (car splitted-entry))
-           (entry-type (if (cdr splitted-entry)
-                           (substring (car (cdr splitted-entry)) 0 -1)
-                         "Unknown")))
-      (progn
-        (insert (imenu-list--depth-string depth)
-                (imenu-list--entry-go-mode-icon entry-type))
-        (insert-button (format " %s" entry-name)
-                       'face 'imenu-list-entry-face-1
-                       'help-echo (format "Go to: %s"
-                                          (car entry))
-                       'follow-link t
-                       'action #'imenu-list--action-goto-entry)
-        (insert "\n"))
-      )))
-
 (defun imenu-list--insert-general-entry (entry depth)
   (if (imenu--subalist-p entry)
       (progn
         (insert (imenu-list--depth-string depth))
-        (insert-button (format "+ %s" (car entry))
+        (insert-button (format "%s %s" imenu-list-subtree-prefix (car entry))
                        'face (imenu-list--get-face depth t)
                        'help-echo (format "Toggle: %s"
                                           (car entry))
@@ -341,7 +296,7 @@ See `hs-minor-mode' for information on what is hide/show."
                        )
         (insert "\n"))
     (insert (imenu-list--depth-string depth))
-    (insert-button (format "- %s" (car entry))
+    (insert-button (format "%s %s" imenu-list-entry-prefix (car entry))
                    'face (imenu-list--get-face depth nil)
                    'help-echo (format "Go to: %s"
                                       (car entry))
@@ -351,9 +306,7 @@ See `hs-minor-mode' for information on what is hide/show."
 
 (defun imenu-list--insert-entry (entry depth)
   "Insert a line for ENTRY with DEPTH."
-  (pcase (with-current-buffer imenu-list--displayed-buffer major-mode)
-    ('go-mode (imenu-list--insert-go-mode-entry entry depth))
-    (_ (imenu-list--insert-general-entry entry depth))))
+  (imenu-list--insert-general-entry entry depth))
 
 (defun imenu-list--insert-entries-internal (index-alist depth)
   "Insert all imenu entries in INDEX-ALIST into the current buffer.
